@@ -1,6 +1,6 @@
 # Genius Memory Game 🤓
 
-Repositório criado para praticar os conceitos aprendidos em JavaScript, HTML e CSS com o famoso jogo da memória GENIUS.
+Repositório criado para praticar os conceitos aprendidos com o famoso jogo da memória GENIUS.
 
 ## Requirements 👀
 * [HTML básico](https://developer.mozilla.org/en-US/docs/Web/HTML)

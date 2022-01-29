@@ -1,0 +1,31 @@
+#full {
+    margin-left: auto;
+    margin-right: auto;
+    width: 20%;
+    margin-top: 10%;
+}
+#game, #control{
+    width: 300px;
+    height: 180px;
+}
+.peca {
+    float: left;
+    width: 110px;
+    height: 90px;
+    margin: 5px;   
+}
+
+#peca1{ border-top-left-radius: 100%; }
+#peca2{ border-top-right-radius: 100%; }
+#peca3{ border-bottom-left-radius: 100%; }
+#peca4{ border-bottom-right-radius: 100%; }
+
+.peca1unsel{background-color: red;}
+.peca2unsel{background-color: yellow;}
+.peca3unsel{background-color: green;}
+.peca4unsel{background-color: blue;}
+
+.peca1sel{background-color: #FFE6E6;}
+.peca2sel{background-color: #FFFFE6;}
+.peca3sel{background-color: #E0FFE0;}
+.peca4sel{background-color: #E6F0FF;}

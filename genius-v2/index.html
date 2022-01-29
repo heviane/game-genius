@@ -1,0 +1,211 @@
+
+<!DOCTYPE html>
+<html lang="pt-br">
+    <head>
+        <meta charset="utf-8" />
+		<meta http-equiv="X-UA-Compatible" content="IE=edge">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Game Genius</title>
+        <link rel="stylesheet" href="style.css"></link>
+
+        <script type="text/javascript">
+            var game = ( function(){ // IIFE
+                function Genius(){
+                    if(!(this instanceof Genius)){
+                        return new Genius();// Programação defensiva: Se função for chamada s/ 'new' ela irá executar
+                    }
+                    this.sequence        = []; // Game Sequence
+                    this.digited         = []; // Typing Sequence
+                    this.currentConsumed = 0;  // Current Sequence
+                    // Wrong Sequence
+                    this.onWrongSequence = undefined; 
+                    // Correct Sequence
+                    this.onRightSequence = function(){
+                        if(this.currentConsumed >= this.sequence.length -1){
+                            this.onWin instanceof Function ? this.onWin(this.currentConsumed+1):'';
+                            return;
+                        }
+                        alert('Next Sequence...');
+                        this.currentConsumed++;
+                        this.executeSequence();
+                    };
+                    // Win the game
+                    this.onWin = undefined;    
+                    // Inicializa setando eventos e atribuindo métodos
+                    function init(){
+                        var genius = this; // Fora da função chamar assim: init.call(this);
+                        var divs = document.getElementsByTagName("div");
+                        for(var i = 0, max = divs.length; i < max; i++){
+                            var div = divs[i];
+                            if(div.className.search("peca") >= 0){
+                                var peca = div;
+                                // Add blinker in part (div)
+                                peca.blink = function(){
+                                    var peca = this; // this representa a própria peça
+                                    peca.toggle = true; // var para 'blinkar' a peça.
+                                    window.clearInterval(peca.interval); // resetando o setInterval (se já existir para esta peça).
+                                    peca.interval = window.setInterval(function(){ // iniciando um novo setInterval.
+                                        if(peca.toggle){
+                                            // evento beforeBlink que pode ou não ser codificado
+                                            // só será executado se diferente de undefined
+                                            peca.beforeBlink instanceof Function ? peca.beforeBlink(peca, genius):''; 
+                                            var sel = peca.getAttribute("sel");
+                                            peca.className = "peca " + sel;
+                                            peca.toggle = false; // Faz condição passar p/ else na próxima execução
+                                        } else {
+                                            var unsel = peca.getAttribute("unsel");
+                                            peca.className = "peca " + unsel;
+                                            window.clearInterval(peca.interval); // remove o setInterval, que faz a peça piscar
+                                            // evento afterBlink que pode ou não ser codificado
+                                            // só será executado se diferente de undefined
+                                            peca.afterBlink instanceof Function ? peca.afterBlink(peca, genius):'';                                
+                                        }             
+                                    }, 150);
+                                };
+                                // Set Event 
+                                peca.onmousedown = function(){
+                                    var sel = this.getAttribute("sel"); // this é a peça atual
+                                    this.className = "peca " + sel;
+                                };
+                                // Set Event 
+                                peca.onmouseup = function(){
+                                    var unsel = this.getAttribute("unsel"); // this é a peça atual
+                                    this.className = "peca " + unsel;
+                                };
+                                // seta outros eventos só para garantir 
+                                peca.ondragstart = peca.onmouseup;
+                                peca.ondragover  = peca.onmouseup;
+                                peca.onblur      = peca.onmouseup;
+                                // Set Event 
+                                peca.onclick = function(){
+                                    var id = this.id.charAt(4); // this é a peça atual
+                                    id = window.parseInt(id);
+                                    genius.digited.push(id);  // add na sequence digitada o id
+                                    if (genius.verify()===false){
+                                        genius.onWrongSequence instanceof Function ? genius.onWrongSequence(genius.currentConsumed + 1):'';
+                                    } else {
+                                        // se terminado a digitação de toda a sequência
+                                        if (genius.digited.length === genius.currentConsumed + 1){
+                                            genius.onRightSequence instanceof Function ? genius.onRightSequence():'';
+                                            genius.digited = []; // reseta o acumulador de sequence digitada
+                                        } 
+                                    }
+                                };
+                            }
+                        }  
+                    }; 
+                    init.call(this);
+                };
+                // Recursividade
+                Genius.prototype.showAllSequence = function(){
+                    var genius = this;
+                    var i      = genius.currentConsumed; // Para não modificar o valor original da propriedade
+                    var pc     = document.getElementById('peca'+genius.sequence[genius.currentConsumed]);
+                    pc.afterBlink = function(peca, genius){ // define o evento (recursividade)
+                        ++i; // Next peça
+                        var pc1 = document.getElementById('peca'+genius.sequence[i]);
+                        if (pc1 !== null){ // Se existir peça
+                            pc1.afterBlink = pc.afterBlink; // recursividade
+                            pc1.blink(); // Pisca próxima peça (que chamará este evento de maneira recursiva )
+                        }
+                    }
+                    pc.blink(); // inicia processo
+                };
+                // Recursividade
+                Genius.prototype.executeSequence = function(){
+                    var genius = this;
+                    var i      = 0; // Para não modificar o valor original da propriedade
+                    var pc     = document.getElementById('peca'+ genius.sequence[i]);
+                    pc.afterBlink = function(peca, genius){ // define o evento (recursividade)
+                        ++i; // Next peça
+                        if( i > genius.currentConsumed){
+                            return; // vai mostrando até a sequência certa somada pelo jogador
+                        }        
+                        var pc1 = document.getElementById('peca'+genius.sequence[i]);
+                        if (pc1 !== null){ // se próxima peça existir
+                            pc1.afterBlink = pc.afterBlink; // recursividade
+                            pc1.blink(); // Pisca próxima peça (que chamará este evento de maneira recursiva )
+                        }
+                    }
+                    pc.blink(); // inicia processo
+                };
+                // Comparação do que foi digitado com a sequência original
+                Genius.prototype.verify = function(){
+                    var ret = true;
+                    for(var i = 0; i <= this.digited.length-1; i++ ){
+                        var digitado = this.digited[i];
+                        var original = this.sequence[i];
+                        ret = ret && (digitado === original);
+                        if (ret === false) {
+                            return false; // Error
+                        }
+                    }
+                    return true;
+                };
+        
+                var genius = undefined;
+                return{
+                    newGame: function(sequence, show){
+                        var seq = sequence === undefined ? 1000 : sequence;
+                        genius = new Genius();// definida aqui, pq será chamada somente no window.onload, as divs estarão prontas 
+                        for(var i = 0; i < seq; i++){ // Generate the game sequence
+                            var x = (Math.round(Math.random() * 4)) ;  
+                            if(x > 0 && x <= 4) { genius.sequence.push(x); }
+                        }
+                        if (show) {
+                            document.getElementById('sequence').innerHTML = genius.sequence;
+                        } else {
+                            document.getElementById('sequence').innerHTML = '';
+                        }
+                        genius.executeSequence();
+                    },
+                    showAllSequence:function(){ genius.showAllSequence(); },
+                    defineOnWrongSequenceEvent:function(evt){ genius.onWrongSequence = evt; },
+                    defineOnWinEvent:function(evt){ genius.onWin = evt; }
+                }  
+            }());
+
+            window.onload = function(){
+                document.getElementById("cmdNewGame").onclick = function(){
+                    if(window.confirm("Let's start?")){
+                        var repet = document.getElementById("txtQtdRepeticoes").value;
+                        var show =  document.getElementById("chkShowSequence").checked;
+                        game.newGame(repet, show);
+                        game.defineOnWrongSequenceEvent(function(qtde){ alert('Wrong sequence: '+ qtde + '\n\nGame Over!'); } );
+                        game.defineOnWinEvent( function(qtde){ alert('Congratulations! You won.\n\nScore: ' + qtde); } ); 
+                    }
+                }
+            }
+        </script>
+    </head>
+
+    <body>
+        <div id="full">
+            <div id="game">
+                <div id="peca1" class="peca peca1unsel" sel="peca1sel" unsel="peca1unsel"></div>
+                <div id="peca2" class="peca peca2unsel" sel="peca2sel" unsel="peca2unsel"></div>
+                <div id="peca3" class="peca peca3unsel" sel="peca3sel" unsel="peca3unsel"></div>
+                <div id="peca4" class="peca peca4unsel" sel="peca4sel" unsel="peca4unsel"></div>
+            </div>
+            <div id="control">
+                <table>
+                    <tr>
+                        <td>
+                            <div id="sequence"></div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td><input type="checkbox" id="chkShowSequence"/>
+                            <label for="chkShowSequence">Mostrar sequência?</label>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td><input type="button" id="cmdNewGame" value="New Game"/>
+                            <input type="text" id="txtQtdRepeticoes" value="10"/>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+    </body>
+</html>

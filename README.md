@@ -9,12 +9,12 @@ Repositório criado para praticar os conceitos aprendidos com o famoso jogo da m
 
 ## Lessons Learned ✔
 
-### Version 1 
+### [Version 1](https://github.com/heviane/game-genius/tree/main/genius-v1) 
 - CSS Grid
 - Manipulação de Array
 - Arrow Functions
 
-### Version 2
+### [Version 2](https://github.com/heviane/game-genius/tree/main/genius-v2) 
 - Programação Orientada a Objetos
 - Prototype inheritance
 - Adicionar métodos dinamicamente a objetos da árvore do DOM
